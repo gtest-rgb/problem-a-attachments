@@ -197,7 +197,11 @@ def validate_graph(graph):
                     raise EvaluationValidationError(
                         f'op {ident}: pipe must be one of {", ".join(PIPES)}; '
                         f'got {item.get("pipe")!r}')
-                require_integer(item.get('cycles'), f'op {ident} cycles')
+                # cycles 允许 -1：正式用例用它表示"时长未显式给出"。
+                # COPY_IN/COPY_OUT 由搬运字节数换算，其余 op 回退 1 拍
+                # （与 C++ 参考实现 op_duration 的 max(1, cycles) 一致）。
+                require_integer(item.get('cycles'), f'op {ident} cycles',
+                                minimum=-1)
     edges = []
     seen = set()
     for edge in graph['edges']:

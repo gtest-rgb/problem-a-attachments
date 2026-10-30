@@ -94,10 +94,11 @@ def format_multicore_result_log(filename, result):
 
 def _trace_json(filename, result):
     """把操作时间线转换为 Perfetto/Chrome 可以打开的 Trace JSON。"""
+    # 轨道编号统一由调度器的 PIPES 派生，IO 层不再维护第二份 Pipe 名称表；
+    # 延迟导入避免 schedule_step3 -> contest_io 的模块级循环依赖。
+    from schedule_step3 import PIPES
+    pipe_order = {pipe: index for index, pipe in enumerate(PIPES)}
     events = []
-    pipe_order = {
-        'PIPE_MTE2': 0, 'PIPE_MTE3': 1, 'PIPE_M': 2, 'PIPE_V': 3, 'PIPE_FIX': 4,
-    }
     # Use one Perfetto process track per core.  Without explicit metadata the
     # UI labels numeric tids as generic ``Thread`` tracks and loses the core /
     # pipe hierarchy.
@@ -143,6 +144,10 @@ def _trace_json(filename, result):
             })
         for op in core.get('ops', []):
             pipe = op['pipe']
+            if pipe not in pipe_order:
+                raise ValueError(
+                    'unknown pipe {!r} for op {}; expected one of {}'.format(
+                        pipe, op['op_id'], ', '.join(pipe_order)))
             events.append({
                 'name': '{} #{}'.format(op['op'], op['op_id']),
                 'cat': pipe,
@@ -150,7 +155,7 @@ def _trace_json(filename, result):
                 'ts': op['start'],
                 'dur': op['duration'],
                 'pid': pid,
-                'tid': pipe_order.get(pipe, 9),
+                'tid': pipe_order[pipe],
                 'args': {
                     'core_id': core_id,
                     'task_id': op.get('task_id'),
