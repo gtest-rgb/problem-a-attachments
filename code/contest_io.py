@@ -95,7 +95,9 @@ def format_multicore_result_log(filename, result):
 def _trace_json(filename, result):
     """把操作时间线转换为 Perfetto/Chrome 可以打开的 Trace JSON。"""
     events = []
-    pipe_order = {'PIPE_MTE2': 0, 'PIPE_MTE3': 1, 'PIPE_M': 2, 'PIPE_V': 3}
+    pipe_order = {
+        'PIPE_MTE2': 0, 'PIPE_MTE3': 1, 'PIPE_M': 2, 'PIPE_V': 3, 'PIPE_FIX': 4,
+    }
     # Use one Perfetto process track per core.  Without explicit metadata the
     # UI labels numeric tids as generic ``Thread`` tracks and loses the core /
     # pipe hierarchy.
@@ -113,7 +115,7 @@ def _trace_json(filename, result):
         pid = pid_base + core_id
         # Evaluators already publish task/subgraph spans. Keep them as their
         # own category so the core process can be collapsed/expanded while
-        # the four pipe tracks remain visible underneath it.
+        # the pipe tracks remain visible underneath it.
         subgraphs = core.get('subgraphs', [])
         if not subgraphs:
             grouped = {}

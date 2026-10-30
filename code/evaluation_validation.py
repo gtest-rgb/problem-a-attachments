@@ -6,7 +6,9 @@ from pathlib import Path
 class EvaluationValidationError(ValueError):
     """An input or fixed execution order cannot be evaluated."""
 
-PIPES = ('PIPE_MTE2', 'PIPE_MTE3', 'PIPE_M', 'PIPE_V')
+# 与 schedule_step3.PIPES 保持同一顺序。PIPE_FIX 是第 5 条核内 Pipe，
+# 不参与 DDR 带宽池，时长取 op.cycles。
+PIPES = ('PIPE_MTE2', 'PIPE_MTE3', 'PIPE_M', 'PIPE_V', 'PIPE_FIX')
 
 def require_integer(value, name, minimum=0):
     if type(value) is not int or value < minimum:

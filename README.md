@@ -50,7 +50,8 @@ Perfetto Trace。`stub_multicore_cut_and_schedule.py` 只演示方案格式，�
 
 原图必须包含 `ops`、`tensors`、`edges` 三个列表；op/tensor ID为非负整数，
 共享ID空间且唯一，边端点必须存在，禁止重复边和tensor→tensor直接边。
-每个 op 必须带 `pipe` 字段，且取值属于四条 Pipe 之一；仿真与调度都直接读
+每个 op 必须带 `pipe` 字段，且取值属于五条 Pipe 之一
+（`PIPE_MTE2`、`PIPE_MTE3`、`PIPE_M`、`PIPE_V`、`PIPE_FIX`）；仿真与调度都直接读
 该字段，不按 op 名称猜测 Pipe。op 名称本身不做白名单校验。
 配置项拼写错误、重复键、未知段、无效数值以及重复JSON键都会明确报错，
 不静默回退；显式 `--config` 指向不存在的文件也报错。

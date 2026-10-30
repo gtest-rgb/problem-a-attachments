@@ -5,7 +5,7 @@ schedule_step3.py — 步骤 3: 乱序流水排布 (out-of-order scheduling)
 
 职责边界:
     - Step2 负责片上内存容量、换入换出节点和扩展图；
-    - Step3 只读取扩展图，按依赖和 4 条 pipe 排布时间；
+    - Step3 只读取扩展图，按依赖和 5 条 pipe 排布时间；
     - 所有访问 DDR 的 COPY 共享总带宽，L1↔UB COPY 使用内部带宽；
     - Step3 按重命名 tensor 的消费者引用计数执行 alloc/free 和容量门控；
     - 不分配具体地址。容量被抽象为可拆分的虚拟字节额度；
@@ -24,9 +24,10 @@ from collections import Counter, defaultdict
 
 from contest_io import emit_error
 
-# 硬件模型：核内四条指令 Pipe，每条同一时刻只有 1 个在飞指令。
+# 硬件模型：核内五条指令 Pipe，每条同一时刻只有 1 个在飞指令。
+# PIPE_FIX 与另外四条互斥调度，时长用 op.cycles，不进入 DDR 带宽池。
 # 二者都是固定约束而非选手可调参数，因此写死在代码里，config.txt 不接收。
-PIPES = ('PIPE_MTE2', 'PIPE_MTE3', 'PIPE_M', 'PIPE_V')
+PIPES = ('PIPE_MTE2', 'PIPE_MTE3', 'PIPE_M', 'PIPE_V', 'PIPE_FIX')
 PIPE_SLOTS = 1
 
 class Step3SchedulingError(RuntimeError):
